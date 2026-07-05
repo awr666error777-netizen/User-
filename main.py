@@ -8,7 +8,18 @@ from telethon.tl.types import MessageEntityMention
 from supabase import create_client
 from groq import Groq
 import wikipediaapi
+from flask import Flask
+import threading
 
+# Пустой веб-сервер для Render
+web_app = Flask(__name__)
+
+@web_app.route('/')
+def home():
+    return 'Userbot is running'
+
+def run_web_server():
+    web_app.run(host='0.0.0.0', port=10000)
 # ------------------------------------------------------------
 # Инициализация клиентов
 # ------------------------------------------------------------
