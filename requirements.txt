@@ -1,6 +1,4 @@
 telethon
 supabase
 groq
-flask
-gunicorn
 wikipediaapi
