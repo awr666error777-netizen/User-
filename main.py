@@ -293,33 +293,41 @@ async def handler(event):
         async with processing_lock:
             processing_chats.discard(lock_key)
 
-## ------------------------------------------------------------
-# Запуск (автоматическая авторизация)
+# ------------------------------------------------------------
+# Запуск (автоматическая авторизация в два шага)
 # ------------------------------------------------------------
 async def main():
     await client.connect()
     
-    # Проверяем, есть ли уже сохранённая сессия
     if not await client.is_user_authorized():
         print("Сессия не найдена, пытаюсь авторизоваться...")
         
-        # Берём код из переменной окружения
         code = os.environ.get('TELEGRAM_CODE', '0')
+        phone_code_hash = os.environ.get('TELEGRAM_HASH', '')
         
         if code and code != '0':
             try:
-                await client.sign_in(phone=PHONE, code=code)
-                print("Авторизация с кодом из переменной...")
+                # Пробуем войти с кодом и хешем
+                if phone_code_hash:
+                    await client.sign_in(phone=PHONE, code=code, phone_code_hash=phone_code_hash)
+                else:
+                    # Если хеша нет — сначала запрашиваем код, получаем хеш
+                    result = await client.send_code_request(PHONE)
+                    print(f"Код отправлен в Telegram. Хеш: {result.phone_code_hash}")
+                    print("Добавь переменную TELEGRAM_HASH на Render с этим значением и перезапусти.")
+                    return
+                print("Авторизация с кодом и хешем...")
             except Exception as e:
                 print(f"Ошибка при авторизации: {e}")
-                # Если код не подошёл, запрашиваем новый
-                await client.send_code_request(PHONE)
-                print("Код не подошёл. Запрошен новый код. Обнови переменную TELEGRAM_CODE на Render.")
+                result = await client.send_code_request(PHONE)
+                print(f"Запрошен новый код. Хеш: {result.phone_code_hash}")
+                print("Обнови переменные TELEGRAM_CODE и TELEGRAM_HASH на Render и перезапусти.")
                 return
         else:
-            # Если кода нет, запрашиваем его у Telegram
-            await client.send_code_request(PHONE)
-            print("Код отправлен в Telegram. Добавь его в переменную TELEGRAM_CODE на Render и перезапусти.")
+            # Если кода нет — запрашиваем его
+            result = await client.send_code_request(PHONE)
+            print(f"Код отправлен в Telegram. Хеш: {result.phone_code_hash}")
+            print("Добавь переменные TELEGRAM_CODE и TELEGRAM_HASH на Render и перезапусти.")
             return
     
     print("Userbot запущен!")
