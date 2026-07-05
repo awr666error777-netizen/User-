@@ -293,11 +293,35 @@ async def handler(event):
         async with processing_lock:
             processing_chats.discard(lock_key)
 
-# ------------------------------------------------------------
-# Запуск
+## ------------------------------------------------------------
+# Запуск (автоматическая авторизация)
 # ------------------------------------------------------------
 async def main():
-    await client.start(phone=PHONE, code=os.environ.get('TELEGRAM_CODE'))
+    await client.connect()
+    
+    # Проверяем, есть ли уже сохранённая сессия
+    if not await client.is_user_authorized():
+        print("Сессия не найдена, пытаюсь авторизоваться...")
+        
+        # Берём код из переменной окружения
+        code = os.environ.get('TELEGRAM_CODE', '0')
+        
+        if code and code != '0':
+            try:
+                await client.sign_in(phone=PHONE, code=code)
+                print("Авторизация с кодом из переменной...")
+            except Exception as e:
+                print(f"Ошибка при авторизации: {e}")
+                # Если код не подошёл, запрашиваем новый
+                await client.send_code_request(PHONE)
+                print("Код не подошёл. Запрошен новый код. Обнови переменную TELEGRAM_CODE на Render.")
+                return
+        else:
+            # Если кода нет, запрашиваем его у Telegram
+            await client.send_code_request(PHONE)
+            print("Код отправлен в Telegram. Добавь его в переменную TELEGRAM_CODE на Render и перезапусти.")
+            return
+    
     print("Userbot запущен!")
     await client.run_until_disconnected()
 
