@@ -344,5 +344,8 @@ async def main():
     print("Userbot запущен!")
     await client.run_until_disconnected()
 
+# Запускаем веб-сервер в фоне
+threading.Thread(target=run_web_server, daemon=True).start()
+
 if __name__ == '__main__':
     asyncio.run(main())
