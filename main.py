@@ -15,10 +15,15 @@ import wikipediaapi
 # Встроенные ключи Telethon (не нужно создавать приложение на my.telegram.org)
 API_ID = 2040
 API_HASH = 'b18441a1ff607e10a989891a5462e627'
-PHONE = ('PHONE')
+import os
+
+PHONE = os.environ.get('PHONE')
+SUPABASE_URL = os.environ.get('SUPABASE_URL')
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-groq_client = Groq(api_key='GROQ_API_KEY')
+groq_client = Groq(api_key=GROQ_API_KEY)
 
 MODEL_NAME = "qwen/qwen3-32b"  # или "qwen/qwen3-32b", если доступна
 
