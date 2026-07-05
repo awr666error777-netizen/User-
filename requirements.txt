@@ -2,3 +2,4 @@ telethon
 supabase
 groq
 wikipedia-API
+flask
