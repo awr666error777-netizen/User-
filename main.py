@@ -295,7 +295,7 @@ async def handler(event):
 # Запуск
 # ------------------------------------------------------------
 async def main():
-    await client.start(phone=PHONE)
+    await client.start(phone=PHONE, code=os.environ.get('TELEGRAM_CODE'))
     print("Userbot запущен!")
     await client.run_until_disconnected()
 
