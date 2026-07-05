@@ -17,9 +17,7 @@ API_ID = 2040
 API_HASH = 'b18441a1ff607e10a989891a5462e627'
 PHONE = ('PHONE')
 
-supabase = 'SUPABASE_URL',
-    'SUPABASE_KEY'
-
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 groq_client = Groq(api_key='GROQ_API_KEY')
 
 MODEL_NAME = "qwen/qwen3-32b"  # или "qwen/qwen3-32b", если доступна
