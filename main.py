@@ -15,7 +15,6 @@ import wikipediaapi
 # Встроенные ключи Telethon (не нужно создавать приложение на my.telegram.org)
 API_ID = 2040
 API_HASH = 'b18441a1ff607e10a989891a5462e627'
-import os
 
 PHONE = os.environ.get('PHONE')
 SUPABASE_URL = os.environ.get('SUPABASE_URL')
