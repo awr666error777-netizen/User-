@@ -23,7 +23,7 @@ supabase = create_client(
 )
 groq_client = Groq(api_key=os.environ.get('GROQ_API_KEY'))
 
-MODEL_NAME = "llama-3.1-8b-instant"  # или "qwen/qwen3-32b", если доступна
+MODEL_NAME = "qwen/qwen3-32b"  # или "qwen/qwen3-32b", если доступна
 
 # Глобальные переменные для защиты от двойных сообщений
 processing_chats = set()
