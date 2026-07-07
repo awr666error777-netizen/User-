@@ -8,24 +8,14 @@ from telethon.tl.types import MessageEntityMention
 from supabase import create_client
 from groq import Groq
 import wikipediaapi
-from flask import Flask
-import threading
 
-# Пустой веб-сервер для Render
-web_app = Flask(__name__)
-
-@web_app.route('/')
-def home():
-    return 'Userbot is running'
-
-def run_web_server():
-    web_app.run(host='0.0.0.0', port=10000)
 # ------------------------------------------------------------
 # Инициализация клиентов
 # ------------------------------------------------------------
 # Встроенные ключи Telethon (не нужно создавать приложение на my.telegram.org)
 API_ID = 2040
 API_HASH = 'b18441a1ff607e10a989891a5462e627'
+import os
 
 PHONE = os.environ.get('PHONE')
 SUPABASE_URL = os.environ.get('SUPABASE_URL')
@@ -305,7 +295,7 @@ async def handler(event):
             processing_chats.discard(lock_key)
 
 # ------------------------------------------------------------
-# Запуск (автоматическая авторизация в два шага)
+# Запуск (автоматическая авторизация)
 # ------------------------------------------------------------
 async def main():
     await client.connect()
@@ -313,39 +303,26 @@ async def main():
     if not await client.is_user_authorized():
         print("Сессия не найдена, пытаюсь авторизоваться...")
         
-        code = os.environ.get('TELEGRAM_CODE', '0')
+        code = os.environ.get('TELEGRAM_CODE', '')
         phone_code_hash = os.environ.get('TELEGRAM_HASH', '')
         
-        if code and code != '0':
-            try:
-                # Пробуем войти с кодом и хешем
-                if phone_code_hash:
-                    await client.sign_in(phone=PHONE, code=code, phone_code_hash=phone_code_hash)
-                else:
-                    # Если хеша нет — сначала запрашиваем код, получаем хеш
-                    result = await client.send_code_request(PHONE)
-                    print(f"Код отправлен в Telegram. Хеш: {result.phone_code_hash}")
-                    print("Добавь переменную TELEGRAM_HASH на Render с этим значением и перезапусти.")
-                    return
-                print("Авторизация с кодом и хешем...")
-            except Exception as e:
-                print(f"Ошибка при авторизации: {e}")
-                result = await client.send_code_request(PHONE)
-                print(f"Запрошен новый код. Хеш: {result.phone_code_hash}")
-                print("Обнови переменные TELEGRAM_CODE и TELEGRAM_HASH на Render и перезапусти.")
-                return
-        else:
-            # Если кода нет — запрашиваем его
+        # Запрашиваем код только если переменные пусты
+        if not code or not phone_code_hash:
             result = await client.send_code_request(PHONE)
-            print(f"Код отправлен в Telegram. Хеш: {result.phone_code_hash}")
-            print("Добавь переменные TELEGRAM_CODE и TELEGRAM_HASH на Render и перезапусти.")
+            print(f"Код отправлен. Хеш: {result.phone_code_hash}")
+            print("Добавь TELEGRAM_CODE и TELEGRAM_HASH в Render и перезапусти.")
+            return
+        
+        try:
+            await client.sign_in(phone=PHONE, code=code, phone_code_hash=phone_code_hash)
+            print("Авторизация успешна!")
+        except Exception as e:
+            print(f"Ошибка: {e}")
+            # Не запрашиваем новый код здесь!
             return
     
     print("Userbot запущен!")
     await client.run_until_disconnected()
-
-# Запускаем веб-сервер в фоне
-threading.Thread(target=run_web_server, daemon=True).start()
 
 if __name__ == '__main__':
     asyncio.run(main())
