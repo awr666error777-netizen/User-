@@ -1,5 +1,5 @@
-telethon
-supabase
-groq
-wikipedia-API
-flask
+telethon==1.36.0
+gigachat==0.1.36
+supabase==2.7.4
+Wikipedia-API==0.7.1
+Flask==3.0.3
